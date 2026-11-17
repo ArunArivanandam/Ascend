@@ -18,16 +18,17 @@ DailyAscend is a mobile productivity app with a mountain-climbing theme. A user 
 ## Layout
 
 ```
-app/                    Expo Router routes only (thin; no business logic)
-  (onboarding)/
-  (tabs)/               index = mountain/today, plan, reports, settings
-  climb/[chunkId].tsx
-  checkin/[sessionId].tsx
-  paywall.tsx
 src/
-  domain/               PURE TypeScript: altitude, adherence, growth, rolling, insights, reports
+  app/                  Expo Router routes only (thin; no business logic). Every file here is a screen.
+    (onboarding)/
+    (tabs)/             index = mountain/today, plan, reports, settings
+    climb/[chunkId].tsx
+    checkin/[sessionId].tsx
+    paywall.tsx
+  domain/               PURE TypeScript (lint-enforced): altitude, series, growth, insights, reports, route, dates
     constants.ts        all multiplier ranges and thresholds, plus MODEL_VERSION
     fixtures/           synthetic 30-day users for tests and the dev "load fixture" menu
+    __tests__/          unit tests (*.test.ts) + helpers.ts
   db/                   Drizzle schema, migrations, repositories
   sync/                 Supabase push/pull sync queue
   features/<feature>/   components + hooks per feature (climb, checkin, mountain, reports, divide, routine, paywall)
@@ -42,22 +43,33 @@ e2e/                    Maestro flows
 
 ## Commands
 
-The project is scaffolded in Phase 0. Until then these are the intended commands; keep this list up to date as scripts are added.
+| Task                         | Command                                                             |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Install                      | `npm install`                                                       |
+| Add a dependency             | `npx expo install <pkg>` (never plain `npm install <pkg>`)          |
+| Dev server (dev client)      | `npm start`                                                         |
+| Dev server (Expo Go)         | `npm run start:go` (only until the first native module lands)       |
+| Android dev build            | `npx eas-cli@latest build --profile development --platform android` |
+| **Everything CI runs**       | `npm run check` (typecheck + lint + format check + tests)           |
+| Typecheck                    | `npm run typecheck`                                                 |
+| Lint                         | `npm run lint`                                                      |
+| Format                       | `npm run format`                                                    |
+| Unit tests                   | `npm test`                                                          |
+| Domain tests + 100% coverage | `npm run test:domain`                                               |
+| Dependency health            | `npm run doctor`                                                    |
+| DB migration (Phase 2+)      | `npx drizzle-kit generate`                                          |
+| Supabase local (Phase 5+)    | `npx supabase start` / `npx supabase db reset`                      |
+| End-to-end tests (Phase 7+)  | `maestro test e2e/`                                                 |
 
-| Task | Command |
-|---|---|
-| Install | `npm install` |
-| Dev server (dev client) | `npx expo start --dev-client` |
-| Android dev build | `eas build --profile development --platform android` |
-| Typecheck | `npm run typecheck` (`tsc --noEmit`) |
-| Lint | `npm run lint` |
-| Unit tests | `npm test` |
-| Domain tests only | `npm test -- src/domain` |
-| DB migration (local) | `npx drizzle-kit generate` |
-| Supabase local | `npx supabase start` / `npx supabase db reset` |
-| End-to-end tests | `maestro test e2e/` |
+Before calling a task done, run `npm run check` (and `npm run test:domain` if `src/domain` changed) and make sure it passes.
 
-Before calling a task done, run typecheck, lint and tests, and make sure they pass.
+## Expo has changed — do not trust training data
+
+This project uses **Expo SDK 58** (React Native 0.88, React 19.3, TypeScript 6). Expo ships breaking changes every SDK release. Before writing code that touches an Expo, EAS or React Native API, read the versioned docs at `https://docs.expo.dev/versions/v58.0.0/`, or start from `https://docs.expo.dev/llms.txt`.
+
+- `ios/` and `android/` are generated (Continuous Native Generation) and git-ignored. Never edit them; configure native behaviour through `app.json` and config plugins.
+- After adding a library with native code, the app needs a new development build.
+- TypeScript 6 doesn't load `@types/*` packages automatically: add new global type packages to `compilerOptions.types` in `tsconfig.json`.
 
 ## Domain rules (do not break)
 
