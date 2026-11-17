@@ -18,7 +18,8 @@ export interface RoutePosition {
 
 /**
  * Avatar position on the route. After a missed day (no climb yesterday and none yet
- * today) the avatar is drawn at the last camp reached, never at zero. Progress itself
+ * today) the avatar is drawn at the last camp reached. If no camp has been reached
+ * yet it stays where it is: a missed day never sends it back to zero. Progress itself
  * is never removed.
  */
 export function routePosition(
@@ -45,7 +46,7 @@ export function routePosition(
   return {
     progress,
     lastCampProgress,
-    avatarProgress: missedDay ? lastCampProgress : progress,
+    avatarProgress: missedDay && lastCampProgress > 0 ? lastCampProgress : progress,
     missedDay,
   };
 }

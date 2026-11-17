@@ -52,3 +52,63 @@ export function toLocalDate(instant: Date, timeZone: string): LocalDate {
   for (const part of parts) byType[part.type] = part.value;
   return `${byType.year}-${byType.month}-${byType.day}`;
 }
+
+interface ZonedParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+}
+
+/** The wall-clock date and time of an instant in an IANA timezone. */
+function zonedParts(instantMs: number, timeZone: string): ZonedParts {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).formatToParts(new Date(instantMs));
+  const byType: Record<string, string> = {};
+  for (const part of parts) byType[part.type] = part.value;
+  return {
+    year: Number(byType.year),
+    month: Number(byType.month),
+    day: Number(byType.day),
+    // Some engines print midnight as 24 even with the h23 cycle.
+    hour: Number(byType.hour) % 24,
+    minute: Number(byType.minute),
+  };
+}
+
+/** Minutes since local midnight (0–1439) at `instantMs` in an IANA timezone. */
+export function localMinutesOfDay(instantMs: number, timeZone: string): number {
+  const { hour, minute } = zonedParts(instantMs, timeZone);
+  return hour * 60 + minute;
+}
+
+/** How far the timezone's wall clock is ahead of UTC at `instantMs`, in milliseconds. */
+function zoneOffsetMs(instantMs: number, timeZone: string): number {
+  const p = zonedParts(instantMs, timeZone);
+  const wallClockAsUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute);
+  return wallClockAsUtc - Math.floor(instantMs / 60_000) * 60_000;
+}
+
+/**
+ * The instant (epoch milliseconds) at which a timezone's wall clock shows the given
+ * local date and time. Handles daylight-saving changes.
+ */
+export function localTimeToInstant(
+  date: LocalDate,
+  hour: number,
+  minute: number,
+  timeZone: string,
+): number {
+  const wallClockAsUtc = toUtcMs(date) + (hour * 60 + minute) * 60_000;
+  const firstGuess = wallClockAsUtc - zoneOffsetMs(wallClockAsUtc, timeZone);
+  // The offset at the guess can differ from the offset at the answer near a DST change.
+  return wallClockAsUtc - zoneOffsetMs(firstGuess, timeZone);
+}

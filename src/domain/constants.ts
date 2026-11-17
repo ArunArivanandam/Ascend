@@ -46,3 +46,24 @@ export const PLATEAU_BAND = 0.0025;
 export const SUGGESTION_MIN_CHECKIN_RATE = 0.5;
 export const SUGGESTION_HIGH_INTERRUPTIONS_PER_SESSION = 2;
 export const SUGGESTION_SLOW_TIME_TO_FLOW_MIN = 15;
+
+/** A climb shorter than this is discarded: it is not a session and not a climbing day. */
+export const MIN_SESSION_SECONDS = 60;
+
+/** Hard cap on one climb, so a forgotten timer cannot record a whole day. */
+export const MAX_SESSION_SECONDS = 4 * 60 * 60;
+
+/** Time-to-flow answers offered at check-in, in minutes (the last one means "20 or more"). */
+export const TIME_TO_FLOW_OPTIONS_MIN = [0, 5, 10, 15, 20] as const;
+
+/**
+ * Day (1-based; day 1 is the first climb) from which each setup step is offered,
+ * so that Add, Subtract and Divide never block the first climb.
+ */
+export const SETUP_PROMPT_DAY = { add: 2, subtract: 3, divide: 4 } as const;
+
+/** A route counts as divided once this many chunks are planned ahead, or it has two camps. */
+export const DIVIDED_MIN_PLANNED_CHUNKS = 2;
+
+/** Climb reminders are scheduled this many days ahead, then stop until the app is opened. */
+export const REMINDER_DAYS_AHEAD = 14;

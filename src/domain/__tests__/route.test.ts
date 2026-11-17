@@ -25,7 +25,7 @@ describe('routePosition', () => {
     expect(position.progress).toBe(0.75);
   });
 
-  it('uses zero as the last camp when no camp is complete yet', () => {
+  it('stays put after a missed day when no camp has been reached yet (never to zero)', () => {
     const position = routePosition(
       [
         { campIndex: 0, done: true },
@@ -34,7 +34,9 @@ describe('routePosition', () => {
       '2026-11-01',
       '2026-11-10',
     );
-    expect(position.avatarProgress).toBe(0);
+    expect(position.missedDay).toBe(true);
+    expect(position.lastCampProgress).toBe(0);
+    expect(position.avatarProgress).toBe(0.5);
     expect(position.progress).toBe(0.5);
   });
 

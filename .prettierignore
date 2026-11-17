@@ -7,3 +7,4 @@ ios
 package-lock.json
 assets
 *.pdf
+src/db/migrations

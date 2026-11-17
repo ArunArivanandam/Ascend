@@ -7,7 +7,7 @@ module.exports = defineConfig([
   expoConfig,
   prettierConfig,
   {
-    ignores: ['dist/*', '.expo/*', 'coverage/*', 'android/*', 'ios/*'],
+    ignores: ['src/db/migrations/*', 'dist/*', '.expo/*', 'coverage/*', 'android/*', 'ios/*'],
   },
   {
     // The domain layer must stay pure: no React, Expo, DB or network imports.
